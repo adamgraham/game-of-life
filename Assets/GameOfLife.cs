@@ -7,14 +7,21 @@ public class GameOfLife : MonoBehaviour
     private bool[,] _next;
 
     [Header("Configuration")]
+
     public Vector2Int size = new Vector2Int(512, 512);
     public State initialState;
     public Color aliveColor = Color.white;
     public Color deadColor = Color.black;
 
-    [Header("Information")]
-    public int population;
-    public int iterations;
+    [Header("Generation Info")]
+
+    [SerializeField]
+    private int _population;
+    public int population => _population;
+
+    [SerializeField]
+    private int _iterations;
+    public int iterations => _iterations;
 
     private void Start()
     {
@@ -40,11 +47,11 @@ public class GameOfLife : MonoBehaviour
 
         if (this.initialState != null)
         {
-            this.population = this.initialState.cells.Length;
+            _population = this.initialState.cells.Length;
 
             Vector2Int center = this.size / 2;
 
-            for (int i = 0; i < this.population; i++)
+            for (int i = 0; i < _population; i++)
             {
                 Vector2Int cell = this.initialState.cells[i];
                 cell += center;
@@ -59,8 +66,6 @@ public class GameOfLife : MonoBehaviour
 
     private void FixedUpdate()
     {
-        this.iterations++;
-
         for (int x = 1; x < this.size.x - 1; x++)
         {
             for (int y = 1; y < this.size.y - 1; y++)
@@ -80,6 +85,7 @@ public class GameOfLife : MonoBehaviour
         }
 
         _texture.Apply();
+        _iterations++;
     }
 
     private int CountNeighbors(int x, int y, bool alive)
@@ -105,13 +111,13 @@ public class GameOfLife : MonoBehaviour
         {
             _next[x, y] = true;
             _texture.SetPixel(x, y, this.aliveColor);
-            this.population++;
+            _population++;
         }
         else if (alive && (neighbors < 2 || neighbors > 3))
         {
             _next[x, y] = false;
             _texture.SetPixel(x, y, this.deadColor);
-            this.population--;
+            _population--;
         }
         else
         {
