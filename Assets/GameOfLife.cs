@@ -7,8 +7,10 @@ public class GameOfLife : MonoBehaviour
     private bool[,] _next;
 
     [Header("Configuration")]
-    public State initialState;
     public Vector2Int size = new Vector2Int(512, 512);
+    public State initialState;
+    public Color aliveColor = Color.white;
+    public Color deadColor = Color.black;
 
     [Header("Information")]
     public int population;
@@ -25,13 +27,14 @@ public class GameOfLife : MonoBehaviour
         _texture.filterMode = FilterMode.Point;
         _texture.wrapMode = TextureWrapMode.Clamp;
 
+        Camera.main.backgroundColor = this.deadColor;
         GetComponent<Renderer>().material.mainTexture = _texture;
 
         for (int x = 0; x < this.size.x; x++)
         {
             for (int y = 0; y < this.size.y; y++)
             {
-                _texture.SetPixel(x, y, Color.black);
+                _texture.SetPixel(x, y, this.deadColor);
             }
         }
 
@@ -47,7 +50,7 @@ public class GameOfLife : MonoBehaviour
                 cell += center;
 
                 _grid[cell.x, cell.y] = true;
-                _texture.SetPixel(cell.x, cell.y, Color.white);
+                _texture.SetPixel(cell.x, cell.y, this.aliveColor);
             }
         }
 
@@ -101,13 +104,13 @@ public class GameOfLife : MonoBehaviour
         if (!alive && neighbors == 3)
         {
             _next[x, y] = true;
-            _texture.SetPixel(x, y, Color.white);
+            _texture.SetPixel(x, y, this.aliveColor);
             this.population++;
         }
         else if (alive && (neighbors < 2 || neighbors > 3))
         {
             _next[x, y] = false;
-            _texture.SetPixel(x, y, Color.black);
+            _texture.SetPixel(x, y, this.deadColor);
             this.population--;
         }
         else

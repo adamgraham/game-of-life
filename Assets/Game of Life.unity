@@ -154,8 +154,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 760ca2c67419fab488be242ee4e26263, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialState: {fileID: 11400000, guid: 7e0d11dda4ff9074bb1b4caf8f1bdbbd, type: 2}
   size: {x: 512, y: 512}
+  initialState: {fileID: 11400000, guid: 7e0d11dda4ff9074bb1b4caf8f1bdbbd, type: 2}
+  aliveColor: {r: 1, g: 1, b: 1, a: 1}
+  deadColor: {r: 0, g: 0, b: 0, a: 1}
   population: 0
   iterations: 0
 --- !u!23 &381679521
