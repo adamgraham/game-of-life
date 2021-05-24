@@ -93,6 +93,7 @@ public class GameOfLife : MonoBehaviour
         _info.population = configuration.cells.Length;
 
         Vector2Int center = this.size / 2;
+        center -= configuration.GetCenter();
 
         for (int i = 0; i < _info.population; i++)
         {
