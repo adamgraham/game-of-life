@@ -28,42 +28,79 @@ public class GameOfLife : MonoBehaviour
     private Generation _info;
     public Generation info => _info;
 
-    private void Start()
+    private void OnValidate()
     {
+        Configure();
+    }
+
+    private void Awake()
+    {
+        Configure();
+    }
+
+    private void Configure()
+    {
+        Preconfiguration();
+        CreateTexture();
+        ClearAllCells();
+        SetInitialState(this.initialState);
+    }
+
+    private void Preconfiguration()
+    {
+        Camera.main.backgroundColor = this.deadColor;
+
         this.transform.localScale = new Vector3(Mathf.Sqrt(this.size.x), Mathf.Sqrt(this.size.y), 1.0f);
 
         _grid = new bool[this.size.x, this.size.y];
         _next = new bool[this.size.x, this.size.y];
+    }
 
-        _texture = new Texture2D(this.size.x, this.size.y);
-        _texture.filterMode = FilterMode.Point;
-        _texture.wrapMode = TextureWrapMode.Clamp;
+    private void CreateTexture()
+    {
+        if (_texture == null || _texture.width != this.size.x || _texture.height != this.size.y)
+        {
+            _texture = new Texture2D(this.size.x, this.size.y);
+            _texture.filterMode = FilterMode.Point;
+            _texture.wrapMode = TextureWrapMode.Clamp;
+        }
 
-        Camera.main.backgroundColor = this.deadColor;
-        GetComponent<Renderer>().material.mainTexture = _texture;
+        if (Application.isPlaying) {
+            GetComponent<Renderer>().material.mainTexture = _texture;
+        } else {
+            GetComponent<Renderer>().sharedMaterial.mainTexture = _texture;
+        }
+    }
 
+    private void ClearAllCells()
+    {
         for (int x = 0; x < this.size.x; x++)
         {
             for (int y = 0; y < this.size.y; y++)
             {
                 _texture.SetPixel(x, y, this.deadColor);
+                _grid[x, y] = false;
             }
         }
+    }
 
-        if (this.initialState != null)
+    private void SetInitialState(State configuration)
+    {
+        if (configuration == null) {
+            return;
+        }
+
+        _info.population = configuration.cells.Length;
+
+        Vector2Int center = this.size / 2;
+
+        for (int i = 0; i < _info.population; i++)
         {
-            _info.population = this.initialState.cells.Length;
+            Vector2Int cell = configuration.cells[i];
+            cell += center;
 
-            Vector2Int center = this.size / 2;
-
-            for (int i = 0; i < _info.population; i++)
-            {
-                Vector2Int cell = this.initialState.cells[i];
-                cell += center;
-
-                _grid[cell.x, cell.y] = true;
-                _texture.SetPixel(cell.x, cell.y, this.aliveColor);
-            }
+            _grid[cell.x, cell.y] = true;
+            _texture.SetPixel(cell.x, cell.y, this.aliveColor);
         }
 
         _texture.Apply();

@@ -158,8 +158,10 @@ MonoBehaviour:
   initialState: {fileID: 11400000, guid: 7e0d11dda4ff9074bb1b4caf8f1bdbbd, type: 2}
   aliveColor: {r: 1, g: 1, b: 1, a: 1}
   deadColor: {r: 0, g: 0, b: 0, a: 1}
-  population: 0
-  iterations: 0
+  _info:
+    population: 5
+    iterations: 0
+    time: 0
 --- !u!23 &381679521
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -218,7 +220,7 @@ Transform:
   m_GameObject: {fileID: 381679518}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 22.627417, y: 22.627417, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
@@ -259,7 +261,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
