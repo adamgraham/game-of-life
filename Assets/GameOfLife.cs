@@ -2,26 +2,31 @@ using UnityEngine;
 
 public class GameOfLife : MonoBehaviour
 {
+    [System.Serializable]
+    public struct Generation
+    {
+        [ReadOnly]
+        public int population;
+
+        [ReadOnly]
+        public int iterations;
+
+        [ReadOnly]
+        public int time;
+    }
+
     private Texture2D _texture;
     private bool[,] _grid;
     private bool[,] _next;
-
-    [Header("Configuration")]
 
     public Vector2Int size = new Vector2Int(512, 512);
     public State initialState;
     public Color aliveColor = Color.white;
     public Color deadColor = Color.black;
 
-    [Header("Generation Info")]
-
     [SerializeField]
-    private int _population;
-    public int population => _population;
-
-    [SerializeField]
-    private int _iterations;
-    public int iterations => _iterations;
+    private Generation _info;
+    public Generation info => _info;
 
     private void Start()
     {
@@ -47,11 +52,11 @@ public class GameOfLife : MonoBehaviour
 
         if (this.initialState != null)
         {
-            _population = this.initialState.cells.Length;
+            _info.population = this.initialState.cells.Length;
 
             Vector2Int center = this.size / 2;
 
-            for (int i = 0; i < _population; i++)
+            for (int i = 0; i < _info.population; i++)
             {
                 Vector2Int cell = this.initialState.cells[i];
                 cell += center;
@@ -85,7 +90,8 @@ public class GameOfLife : MonoBehaviour
         }
 
         _texture.Apply();
-        _iterations++;
+        _info.iterations++;
+        _info.time = Mathf.RoundToInt(_info.iterations * Time.fixedDeltaTime);
     }
 
     private int CountNeighbors(int x, int y, bool alive)
@@ -111,13 +117,13 @@ public class GameOfLife : MonoBehaviour
         {
             _next[x, y] = true;
             _texture.SetPixel(x, y, this.aliveColor);
-            _population++;
+            _info.population++;
         }
         else if (alive && (neighbors < 2 || neighbors > 3))
         {
             _next[x, y] = false;
             _texture.SetPixel(x, y, this.deadColor);
-            _population--;
+            _info.population--;
         }
         else
         {
