@@ -20,7 +20,7 @@ public class GameOfLife : MonoBehaviour
     private bool[,] _next;
 
     public Vector2Int size = new Vector2Int(512, 512);
-    public State initialState;
+    public State pattern;
     public Color aliveColor = Color.white;
     public Color deadColor = Color.black;
 
@@ -43,7 +43,7 @@ public class GameOfLife : MonoBehaviour
         Preconfiguration();
         CreateTexture();
         ClearAllCells();
-        SetInitialState(this.initialState);
+        SetPattern(this.pattern);
     }
 
     private void Preconfiguration()
@@ -82,22 +82,26 @@ public class GameOfLife : MonoBehaviour
                 _grid[x, y] = false;
             }
         }
+
+        _info.population = 0;
+        _info.iterations = 0;
     }
 
-    private void SetInitialState(State configuration)
+    private void SetPattern(State pattern)
     {
-        if (configuration == null) {
+        if (pattern == null) {
             return;
         }
 
-        _info.population = configuration.cells.Length;
+        _info.population = pattern.cells.Length;
+        _info.iterations = 0;
 
         Vector2Int center = this.size / 2;
-        center -= configuration.GetCenter();
+        center -= pattern.GetCenter();
 
         for (int i = 0; i < _info.population; i++)
         {
-            Vector2Int cell = configuration.cells[i];
+            Vector2Int cell = pattern.cells[i];
             cell += center;
 
             _grid[cell.x, cell.y] = true;
