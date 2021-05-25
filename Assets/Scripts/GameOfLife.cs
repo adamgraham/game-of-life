@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[ExecuteAlways]
 public class GameOfLife : MonoBehaviour
 {
     [System.Serializable]
@@ -28,10 +29,19 @@ public class GameOfLife : MonoBehaviour
     private Generation _info;
     public Generation info => _info;
 
+    #if UNITY_EDITOR
     private void OnValidate()
     {
         Configure();
     }
+
+    private void Update()
+    {
+        if (!Application.isPlaying) {
+            Configure();
+        }
+    }
+    #endif
 
     private void Awake()
     {
@@ -40,20 +50,21 @@ public class GameOfLife : MonoBehaviour
 
     private void Configure()
     {
-        Preconfiguration();
+        SetupGrid();
         CreateTexture();
         ClearAllCells();
         SetPattern(this.pattern);
     }
 
-    private void Preconfiguration()
+    private void SetupGrid()
     {
-        Camera.main.backgroundColor = this.deadColor;
+        if (_grid == null || _grid.GetLength(0) != this.size.x || _grid.GetLength(1) != this.size.y)
+        {
+            _grid = new bool[this.size.x, this.size.y];
+            _next = new bool[this.size.x, this.size.y];
+        }
 
         this.transform.localScale = new Vector3(Mathf.Sqrt(this.size.x), Mathf.Sqrt(this.size.y), 1.0f);
-
-        _grid = new bool[this.size.x, this.size.y];
-        _next = new bool[this.size.x, this.size.y];
     }
 
     private void CreateTexture()
@@ -83,6 +94,7 @@ public class GameOfLife : MonoBehaviour
             }
         }
 
+        _texture.Apply();
         _info.population = 0;
         _info.iterations = 0;
     }
