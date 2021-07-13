@@ -1,22 +1,8 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-[ExecuteAlways]
 public class GameOfLife : MonoBehaviour
 {
-    [System.Serializable]
-    public struct Generation
-    {
-        [ReadOnly]
-        public int population;
-
-        [ReadOnly]
-        public int iterations;
-
-        [ReadOnly]
-        public int time;
-    }
-
     private Tilemap _tilemap;
     private bool[,] _grid;
     private bool[,] _next;
@@ -25,70 +11,19 @@ public class GameOfLife : MonoBehaviour
     public State pattern;
     public Tile aliveTile;
 
-    [SerializeField]
-    private Generation _info;
-    public Generation info => _info;
-
-    #if UNITY_EDITOR
-    private void OnValidate()
-    {
-        Configure();
-    }
-
-    private void Update()
-    {
-        if (!Application.isPlaying) {
-            Configure();
-        }
-    }
-    #endif
-
     private void Awake()
     {
-        Configure();
-    }
-
-    private void Configure()
-    {
         _tilemap = GetComponentInChildren<Tilemap>();
-
-        SetupGrid();
-        ClearBoard();
-        SetPattern(this.pattern);
-    }
-
-    private void SetupGrid()
-    {
-        if (_grid == null || _grid.GetLength(0) != this.size.x || _grid.GetLength(1) != this.size.y)
-        {
-            _grid = new bool[this.size.x, this.size.y];
-            _next = new bool[this.size.x, this.size.y];
-        }
-    }
-
-    private void ClearBoard()
-    {
         _tilemap.ClearAllTiles();
 
-        for (int x = 0; x < this.size.x; x++)
-        {
-            for (int y = 0; y < this.size.y; y++)
-            {
-                _grid[x, y] = false;
-            }
-        }
+        _grid = new bool[this.size.x, this.size.y];
+        _next = new bool[this.size.x, this.size.y];
 
-        _info.population = 0;
-        _info.iterations = 0;
-        _info.time = 0;
+        SetPattern(this.pattern);
     }
 
     private void SetPattern(State pattern)
     {
-        if (pattern == null) {
-            return;
-        }
-
         Vector2Int center = this.size / 2;
         center -= pattern.GetCenter();
 
@@ -100,20 +35,10 @@ public class GameOfLife : MonoBehaviour
             _grid[cell.x, cell.y] = true;
             _tilemap.SetTile(GetTilePosition(cell.x, cell.y), this.aliveTile);
         }
-
-        _info.population = pattern.cells.Length;
-        _info.iterations = 0;
-        _info.time = 0;
     }
 
     private void FixedUpdate()
     {
-        #if UNITY_EDITOR
-        if (!Application.isPlaying) {
-            return;
-        }
-        #endif
-
         for (int x = 1; x < this.size.x - 1; x++)
         {
             for (int y = 1; y < this.size.y - 1; y++)
@@ -131,9 +56,6 @@ public class GameOfLife : MonoBehaviour
                 _grid[x, y] = _next[x, y];
             }
         }
-
-        _info.iterations++;
-        _info.time = Mathf.RoundToInt(_info.iterations * Time.fixedDeltaTime);
     }
 
     private int CountNeighbors(int x, int y, bool alive)
@@ -159,13 +81,11 @@ public class GameOfLife : MonoBehaviour
         {
             _next[x, y] = true;
             _tilemap.SetTile(GetTilePosition(x, y), this.aliveTile);
-            _info.population++;
         }
         else if (alive && (neighbors < 2 || neighbors > 3))
         {
             _next[x, y] = false;
             _tilemap.SetTile(GetTilePosition(x, y), null);
-            _info.population--;
         }
         else
         {
