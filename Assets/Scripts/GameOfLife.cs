@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 [ExecuteAlways]
 public class GameOfLife : MonoBehaviour
@@ -16,14 +17,13 @@ public class GameOfLife : MonoBehaviour
         public int time;
     }
 
-    private Texture2D _texture;
+    private Tilemap _tilemap;
     private bool[,] _grid;
     private bool[,] _next;
 
     public Vector2Int size = new Vector2Int(512, 512);
     public State pattern;
-    public Color aliveColor = Color.white;
-    public Color deadColor = Color.black;
+    public Tile aliveTile;
 
     [SerializeField]
     private Generation _info;
@@ -50,9 +50,10 @@ public class GameOfLife : MonoBehaviour
 
     private void Configure()
     {
+        _tilemap = GetComponentInChildren<Tilemap>();
+
         SetupGrid();
-        CreateTexture();
-        ClearAllCells();
+        ClearBoard();
         SetPattern(this.pattern);
     }
 
@@ -63,40 +64,23 @@ public class GameOfLife : MonoBehaviour
             _grid = new bool[this.size.x, this.size.y];
             _next = new bool[this.size.x, this.size.y];
         }
-
-        this.transform.localScale = new Vector3(Mathf.Sqrt(this.size.x), Mathf.Sqrt(this.size.y), 1.0f);
     }
 
-    private void CreateTexture()
+    private void ClearBoard()
     {
-        if (_texture == null || _texture.width != this.size.x || _texture.height != this.size.y)
-        {
-            _texture = new Texture2D(this.size.x, this.size.y);
-            _texture.filterMode = FilterMode.Point;
-            _texture.wrapMode = TextureWrapMode.Clamp;
-        }
+        _tilemap.ClearAllTiles();
 
-        if (Application.isPlaying) {
-            GetComponent<Renderer>().material.mainTexture = _texture;
-        } else {
-            GetComponent<Renderer>().sharedMaterial.mainTexture = _texture;
-        }
-    }
-
-    private void ClearAllCells()
-    {
         for (int x = 0; x < this.size.x; x++)
         {
             for (int y = 0; y < this.size.y; y++)
             {
-                _texture.SetPixel(x, y, this.deadColor);
                 _grid[x, y] = false;
             }
         }
 
-        _texture.Apply();
         _info.population = 0;
         _info.iterations = 0;
+        _info.time = 0;
     }
 
     private void SetPattern(State pattern)
@@ -105,26 +89,31 @@ public class GameOfLife : MonoBehaviour
             return;
         }
 
-        _info.population = pattern.cells.Length;
-        _info.iterations = 0;
-
         Vector2Int center = this.size / 2;
         center -= pattern.GetCenter();
 
-        for (int i = 0; i < _info.population; i++)
+        for (int i = 0; i < pattern.cells.Length; i++)
         {
             Vector2Int cell = pattern.cells[i];
             cell += center;
 
             _grid[cell.x, cell.y] = true;
-            _texture.SetPixel(cell.x, cell.y, this.aliveColor);
+            _tilemap.SetTile(GetTilePosition(cell.x, cell.y), this.aliveTile);
         }
 
-        _texture.Apply();
+        _info.population = pattern.cells.Length;
+        _info.iterations = 0;
+        _info.time = 0;
     }
 
     private void FixedUpdate()
     {
+        #if UNITY_EDITOR
+        if (!Application.isPlaying) {
+            return;
+        }
+        #endif
+
         for (int x = 1; x < this.size.x - 1; x++)
         {
             for (int y = 1; y < this.size.y - 1; y++)
@@ -143,7 +132,6 @@ public class GameOfLife : MonoBehaviour
             }
         }
 
-        _texture.Apply();
         _info.iterations++;
         _info.time = Mathf.RoundToInt(_info.iterations * Time.fixedDeltaTime);
     }
@@ -170,19 +158,26 @@ public class GameOfLife : MonoBehaviour
         if (!alive && neighbors == 3)
         {
             _next[x, y] = true;
-            _texture.SetPixel(x, y, this.aliveColor);
+            _tilemap.SetTile(GetTilePosition(x, y), this.aliveTile);
             _info.population++;
         }
         else if (alive && (neighbors < 2 || neighbors > 3))
         {
             _next[x, y] = false;
-            _texture.SetPixel(x, y, this.deadColor);
+            _tilemap.SetTile(GetTilePosition(x, y), null);
             _info.population--;
         }
         else
         {
             _next[x, y] = alive;
         }
+    }
+
+    private Vector3Int GetTilePosition(int x, int y)
+    {
+        return new Vector3Int(
+            x - (this.size.x / 2),
+            y - (this.size.y / 2), 0);
     }
 
 }
